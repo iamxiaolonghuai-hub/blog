@@ -1,0 +1,21 @@
+# 依赖与产物
+node_modules
+dist
+server/build
+server/www/uploads
+
+# 版本与文档
+.git
+.gitignore
+.vscode
+docs
+README.md
+server/README.md
+server/server_run.log
+server/test_upload.sh
+server/genpng.py
+
+# 本地环境文件（密钥不进镜像）
+.env.local
+deploy/.env
+server/config.json

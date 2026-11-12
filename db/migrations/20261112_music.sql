@@ -1,0 +1,12 @@
+-- 已有博客库执行一次：新增音乐库与文章背景音乐关联，不改动现有文章内容。
+CREATE TABLE IF NOT EXISTS music_tracks (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  artist VARCHAR(120) NOT NULL DEFAULT '',
+  file_url VARCHAR(500) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4;
+
+ALTER TABLE posts
+  ADD COLUMN music_id BIGINT DEFAULT NULL COMMENT '文章背景音乐' AFTER category,
+  ADD CONSTRAINT fk_posts_music FOREIGN KEY (music_id) REFERENCES music_tracks(id) ON DELETE SET NULL;

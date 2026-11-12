@@ -1,0 +1,77 @@
+# 博客生产环境编排（外部/独立数据库模式）
+#
+# 这个文件【不含数据库】，后端连哪个库完全由 deploy/.env 里的 DB_* 决定。
+# 两种用法：
+#
+#   ① 接独立的 MySQL 容器 / 腾讯云托管数据库（推荐，多项目共用）：
+#        docker compose -f deploy/docker-compose.prod.yml up -d
+#
+#   ② 连本文件自带的 MySQL 容器（单项目自包含）：
+#        docker compose -f deploy/docker-compose.prod.yml -f deploy/with-db.yml up -d
+#
+# 其他项目的容器要连同一个数据库实例，加入共享网络即可，见文件末尾 networks 说明。
+
+name: blog
+
+services:
+  backend:
+    image: blog:latest
+    container_name: blog-backend
+    restart: unless-stopped
+    environment:
+      # 数据库地址。默认 mysql，即 docker-compose.prod.yml 叠加 with-db.yml 时的服务名；
+      # 独立数据库容器填它的容器名，腾讯云 TencentDB 填内网地址 xxx.mysql.tencentcdb.com
+      # 默认 db-mysql = 独立共享容器；自带数据库模式由 with-db.yml 覆盖为 mysql
+      DB_HOST: ${DB_HOST:-db-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-blog}
+      DB_USER: ${DB_USER:-blog}
+      # 没单独配 DB_PASSWORD 时，自动沿用 MYSQL_PASSWORD（避免两处密码不一致）
+      DB_PASSWORD: ${DB_PASSWORD:-${MYSQL_PASSWORD:-}}
+      BLOG_JWT_SECRET: ${BLOG_JWT_SECRET:?请在 deploy/.env 设置 BLOG_JWT_SECRET}
+    volumes:
+      - frontend_dist:/var/www/dist
+      - blog_uploads:/app/www/uploads
+      - blog_backups:/app/backups
+    expose:
+      - "8081"
+    networks:
+      - blog-shared
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: blog-nginx
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - frontend_dist:/var/www/dist:ro
+    networks:
+      - blog-shared
+
+# blog-shared：与其他容器共用数据库的桥接网络。
+# 本文件【不创建】它，由下面两个之一来创建：
+#   - deploy/mysql-standalone.yml（独立共享数据库实例，推荐）
+#   - deploy/with-db.yml（compose 自带数据库）
+# 好处：在独立数据库模式下停掉博客，网络和数据库都不会被连带删除。
+#
+# 其他项目想共用同一个数据库，compose 里这样写：
+#   networks:
+#     blog-shared:
+#       external: true
+#   services:
+#     myapp:
+#       networks: [blog-shared]
+#       environment:
+#         DB_HOST: db-mysql
+networks:
+  blog-shared:
+    external: true
+
+volumes:
+  blog_uploads:
+  frontend_dist:
+  blog_backups:

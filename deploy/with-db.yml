@@ -1,0 +1,53 @@
+# 可选叠加文件：在本 compose 里自带一个 MySQL 容器（单项目自包含模式）
+#
+# 用法（服务器上，项目根目录）：
+#   docker compose -f deploy/docker-compose.prod.yml -f deploy/with-db.yml up -d
+#
+# 如果你打算让多个项目共用一个数据库（推荐），不要用这个文件，
+# 而是单独部署 deploy/mysql-standalone.yml，保持一个实例。
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: blog-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请在 deploy/.env 设置 MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME:-blog}
+      MYSQL_USER: ${DB_USER:-blog}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?请在 deploy/.env 设置 MYSQL_PASSWORD}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+08:00
+    volumes:
+      - blog_mysql_data:/var/lib/mysql
+      # 首次初始化自动建表（后续启动不会重复执行）
+      - ../db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - blog-shared
+    # 不要把 3306 映射到宿主机公网！需要本地管理时开 SSH 隧道：
+    #   ssh -L 3306:127.0.0.1:3306 root@服务器
+
+  backend:
+    # 覆盖 prod.yml 里的连接配置，指向本文件的 mysql 服务
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+
+networks:
+  blog-shared:
+    name: blog-shared
+    driver: bridge
+
+volumes:
+  blog_mysql_data:

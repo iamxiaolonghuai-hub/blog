@@ -1,0 +1,4 @@
+ALTER TABLE posts
+  ADD COLUMN is_pinned BOOLEAN NOT NULL DEFAULT FALSE COMMENT '首页和列表置顶' AFTER music_id,
+  ADD COLUMN is_hot BOOLEAN NOT NULL DEFAULT FALSE COMMENT '热门标记' AFTER is_pinned,
+  ADD COLUMN display_weight INT NOT NULL DEFAULT 0 COMMENT '展示权重，越大越靠前' AFTER is_hot;

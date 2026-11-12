@@ -1,0 +1,52 @@
+{
+  "app": {
+    "threads_num": 4,
+    "enable_session": false,
+    "document_root": "./www",
+    "file_types": ["html", "js", "css", "xml", "txt", "png", "jpg", "jpeg", "gif", "webp", "avif", "ico", "svg", "woff", "woff2", "ttf", "otf", "eot", "pdf", "md", "csv", "zip", "mp3", "ogg", "wav", "m4a"],
+    "mime": { "audio/mpeg": "mp3", "audio/ogg": "ogg", "audio/wav": "wav", "audio/mp4": "m4a" },
+    "max_connections": 100000,
+    "client_max_body_size": "256M",
+    "log": {
+      "log_level": "INFO",
+      "use_spdlog": true
+    }
+  },
+
+  "listeners": [
+    {
+      "address": "0.0.0.0",
+      "port": 8081,
+      "https": false
+    }
+  ],
+
+  "db_clients": [
+    {
+      "name": "default",
+      "rdbms": "mysql",
+      "host": "@DB_HOST@",
+      "port": @DB_PORT@,
+      "dbname": "@DB_NAME@",
+      "user": "@DB_USER@",
+      "passwd": "@DB_PASSWORD@",
+      "charset": "utf8mb4",
+      "is_fast": false,
+      "connection_number": 4,
+      "timeout": 10
+    }
+  ],
+
+  "custom_config": {
+    "jwt_secret": "",
+    "site": {
+      "name": "龙淮的札记",
+      "owner": "肖龙淮",
+      "title": "系统、代码与思考",
+      "bio": "一个系统程序员，写 C++ 后端，也写 Vue 前端。",
+      "location": "武汉",
+      "email": "hello@example.com",
+      "github": "https://github.com/yourname"
+    }
+  }
+}

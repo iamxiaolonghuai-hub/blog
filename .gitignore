@@ -1,0 +1,51 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# 后端构建产物与用户上传文件
+server/build/
+server/config.json
+.runtime-arch/
+server/www/uploads/
+*.tar.gz
+*.zip
+docs/API.html
+server/server_run.log
+server/test_upload.sh
+__pycache__/
+*.pyc
+deploy/cloud-*-20261109.sh
+deploy/test-backup-candidate.sh
+deploy/test-backup-api.sh
+deploy/test-backup-schedule.sh
+deploy/verify-backup-production.sh
+deploy/cleanup-backup-test.sh
+deploy/import-local-posts.py
+
+# 部署密钥
+deploy/.env
+.env
+.env.*
+!.env.example
+!deploy/.env.example
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
