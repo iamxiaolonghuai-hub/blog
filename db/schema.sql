@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS posts (
   is_pinned    BOOLEAN      NOT NULL DEFAULT FALSE COMMENT '首页和列表置顶',
   is_hot       BOOLEAN      NOT NULL DEFAULT FALSE COMMENT '热门标记',
   display_weight INT        NOT NULL DEFAULT 0 COMMENT '展示权重，越大越靠前',
-  status       ENUM('draft', 'published') NOT NULL DEFAULT 'draft' COMMENT '草稿 / 已发布',
+  status       ENUM('draft', 'published', 'hidden') NOT NULL DEFAULT 'draft' COMMENT '草稿 / 已发布 / 隐藏',
   views        INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '浏览量',
   published_at DATETIME     DEFAULT NULL COMMENT '发布时间',
   created_at   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,

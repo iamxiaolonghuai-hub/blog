@@ -25,6 +25,8 @@ public:
                   drogon::Put, "blog::filters::JwtFilter");
     ADD_METHOD_TO(AdminPostController::updateDisplay, "/api/admin/posts/{id}/display",
                   drogon::Put, "blog::filters::JwtFilter");
+    ADD_METHOD_TO(AdminPostController::updateStatus, "/api/admin/posts/{id}/status",
+                  drogon::Put, "blog::filters::JwtFilter");
     ADD_METHOD_TO(AdminPostController::remove, "/api/admin/posts/{id}",
                   drogon::Delete, "blog::filters::JwtFilter");
     METHOD_LIST_END
@@ -44,7 +46,7 @@ public:
         p.isHot = j.get("isHot", false).asBool();
         if (j["displayWeight"].isInt()) p.displayWeight = j["displayWeight"].asInt();
         p.status = j.get("status", "draft").asString();
-        if (p.status != "published") p.status = "draft";
+        if (p.status != "published" && p.status != "hidden") p.status = "draft";
 
         if (j.isMember("tags") && j["tags"].isArray()) {
             for (const auto& t : j["tags"]) {
@@ -130,6 +132,20 @@ public:
         const auto post = co_await repo.updateDisplay(id,
             (*json)["isPinned"].asBool(), (*json)["isHot"].asBool(),
             (*json)["displayWeight"].asInt());
+        if (!post) co_return blog::utils::errorResponse(drogon::k404NotFound, "post not found");
+        co_return blog::utils::jsonResponse(post->toJson(false));
+    }
+
+    drogon::Task<drogon::HttpResponsePtr> updateStatus(
+        drogon::HttpRequestPtr req, int id) {
+        const auto json = req->getJsonObject();
+        if (!json || !(*json)["status"].isString())
+            co_return blog::utils::errorResponse(drogon::k400BadRequest, "缺少文章状态");
+        const auto status = (*json)["status"].asString();
+        if (status != "published" && status != "hidden")
+            co_return blog::utils::errorResponse(drogon::k400BadRequest, "状态只能是已发布或隐藏");
+        repositories::PostRepository repo;
+        const auto post = co_await repo.updateStatus(id, status);
         if (!post) co_return blog::utils::errorResponse(drogon::k404NotFound, "post not found");
         co_return blog::utils::jsonResponse(post->toJson(false));
     }

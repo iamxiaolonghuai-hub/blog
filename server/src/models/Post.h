@@ -19,7 +19,7 @@ struct Post {
     bool isPinned = false;
     bool isHot = false;
     int displayWeight = 0;
-    std::string status;  // draft / published
+    std::string status;  // draft / published / hidden
     int views = 0;
     std::string createdAt;  // ISO 8601
     std::string updatedAt;

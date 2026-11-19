@@ -1,6 +1,6 @@
 /* 博客领域模型 —— 与 Drogon 后端返回的 JSON 字段保持一致 */
 
-export type PostStatus = 'draft' | 'published'
+export type PostStatus = 'draft' | 'published' | 'hidden'
 
 export interface Post {
   id: number
@@ -17,7 +17,7 @@ export interface Post {
   isPinned?: boolean
   isHot?: boolean
   displayWeight?: number
-  /** 发布状态：草稿 / 已发布 */
+  /** 发布状态：草稿 / 已发布 / 隐藏 */
   status: PostStatus
   /** ISO 8601 时间 */
   createdAt: string

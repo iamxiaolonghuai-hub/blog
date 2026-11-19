@@ -38,6 +38,7 @@ public:
 
     drogon::Task<bool> remove(int id);
     drogon::Task<std::optional<models::Post>> updateDisplay(int id, bool pinned, bool hot, int weight);
+    drogon::Task<std::optional<models::Post>> updateStatus(int id, const std::string& status);
 
     // 标签 + 计数
     drogon::Task<std::vector<std::pair<std::string, int>>> tagCounts();

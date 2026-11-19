@@ -143,6 +143,13 @@ export const adminApi = {
     )
   },
 
+  updatePostStatus(id: number, status: 'published' | 'hidden'): Promise<Post> {
+    return localOrRemote(
+      (m) => m.updatePostLocal(id, { status }),
+      () => put<Post>(`/admin/posts/${id}/status`, { status }),
+    )
+  },
+
   deletePost(id: number): Promise<void> {
     return localOrRemote(
       (m) => m.deletePostLocal(id),

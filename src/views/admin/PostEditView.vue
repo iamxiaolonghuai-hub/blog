@@ -277,8 +277,9 @@ onMounted(async () => {
 
     <div class="pe__actions">
       <button class="pe__btn-ghost" :disabled="saving" @click="save('draft')">存为草稿</button>
+      <button v-if="isEdit && form.status !== 'draft'" class="pe__btn-ghost" :disabled="saving" @click="save('hidden')">保存并隐藏</button>
       <button class="pe__btn-primary" :disabled="saving" @click="save('published')">
-        {{ saving ? '保存中…' : '发布文章' }}
+        {{ saving ? '保存中…' : form.status === 'hidden' ? '恢复公开' : '发布文章' }}
       </button>
     </div>
   </div>

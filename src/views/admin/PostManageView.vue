@@ -6,7 +6,7 @@ import { formatDate } from '@/utils/date'
 import ConfirmDialog from '@/components/admin/ConfirmDialog.vue'
 import { downloadText, serializePostMarkdown } from '@/utils/postMarkdown'
 
-type Filter = 'all' | 'published' | 'draft'
+type Filter = 'all' | 'published' | 'hidden' | 'draft'
 
 const posts = ref<Post[]>([])
 const loading = ref(true)
@@ -35,8 +35,19 @@ async function exportPost(id: number) {
 const filters: { key: Filter; label: string }[] = [
   { key: 'all', label: '全部' },
   { key: 'published', label: '已发布' },
+  { key: 'hidden', label: '已隐藏' },
   { key: 'draft', label: '草稿' },
 ]
+
+async function toggleHidden(p: Post) {
+  savingId.value = p.id
+  displayError.value = ''
+  try {
+    const updated = await adminApi.updatePostStatus(p.id, p.status === 'hidden' ? 'published' : 'hidden')
+    posts.value = posts.value.map(item => item.id === p.id ? { ...item, ...updated } : item)
+  } catch { displayError.value = `《${p.title}》的状态保存失败` }
+  finally { savingId.value = null }
+}
 
 const tags = computed(() => [...new Set(posts.value.flatMap(p => p.tags))].sort((a, b) => a.localeCompare(b, 'zh-CN')))
 const filtered = computed(() => {
@@ -160,7 +171,7 @@ onMounted(load)
             </td>
             <td>
               <span class="status" :class="`is-${p.status}`">
-                {{ p.status === 'published' ? '已发布' : '草稿' }}
+                {{ p.status === 'published' ? '已发布' : p.status === 'hidden' ? '已隐藏' : '草稿' }}
               </span>
             </td>
             <td class="cell-muted">{{ p.category ?? '—' }}</td>
@@ -173,6 +184,7 @@ onMounted(load)
             <td class="cell-muted">{{ p.views ?? 0 }}</td>
             <td class="col-actions">
               <router-link :to="`/admin/posts/${p.id}/edit`" class="act">编辑</router-link>
+              <button v-if="p.status !== 'draft'" class="act" :disabled="savingId === p.id" @click="toggleHidden(p)">{{ p.status === 'hidden' ? '恢复公开' : '隐藏' }}</button>
               <button class="act" @click="exportPost(p.id)">导出 MD</button>
               <button class="act act--danger" @click="askDelete(p.id)">删除</button>
             </td>
@@ -284,6 +296,7 @@ onMounted(load)
 }
 .status.is-published { background: var(--accent-soft); color: var(--accent); }
 .status.is-draft { background: var(--bg-inset); color: var(--ink-faint); }
+.status.is-hidden { background: var(--bg-inset); color: var(--ink-soft); }
 
 .col-actions { white-space: nowrap; text-align: right; }
 .act {

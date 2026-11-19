@@ -216,6 +216,15 @@ drogon::Task<std::optional<Post>> PostRepository::updateDisplay(int id, bool pin
     co_return co_await findById(id);
 }
 
+drogon::Task<std::optional<Post>> PostRepository::updateStatus(int id, const std::string& status) {
+    auto db = drogon::app().getDbClient();
+    co_await db->execSqlCoro(
+        "UPDATE posts SET status=?, published_at=COALESCE(published_at, "
+        "IF(?='published', NOW(), NULL)) WHERE id=?",
+        status, status, id);
+    co_return co_await findById(id);
+}
+
 drogon::Task<std::vector<std::pair<std::string, int>>>
 PostRepository::tagCounts() {
     auto db = drogon::app().getDbClient();
